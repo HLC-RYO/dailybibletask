@@ -55,9 +55,9 @@ export function AppGate({ children }: { children: React.ReactNode }) {
     return (
       <section className="auth-screen">
         <div className="auth-card">
-          <span className="auth-icon">🐶</span>
+          <img className="auth-mascot" src="/dachshund-watercolor.png" alt="ダックスフントのキャラクター" />
           <p className="eyebrow">Together, one chapter a day</p>
-          <h1>ふたりの聖書の旅</h1>
+          <h1>宝を探そう</h1>
           <p>それぞれのGoogleアカウントでログインし、通読や研究を2人で共有します。</p>
           {error && <p className="form-error">{error}</p>}
           <button className="button auth-button" disabled={busy} onClick={() => run(app.signIn)}>Googleでログイン</button>
@@ -138,7 +138,7 @@ export function AppGate({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header className="account-bar">
-        <a href="/" className="account-brand">🐶 ふたりの聖書の旅</a>
+        <a href="/" className="account-brand">✨ 宝を探そう</a>
         <div>
           <span>{app.memberNames[app.memberId]}</span>
           <a href="/settings">設定</a>

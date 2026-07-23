@@ -98,10 +98,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const firebaseAuth = auth;
-    const firestore = db;
-
-    return onAuthStateChanged(firebaseAuth, async (user) => {
+    return onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
       setProfile(null);
       setHousehold(null);
@@ -114,7 +111,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const userRef = doc(firestore, "users", user.uid);
+      const userRef = doc(db, "users", user.uid);
       const snapshot = await getDoc(userRef);
       if (!snapshot.exists()) {
         await setDoc(userRef, profileFromUser(user));
@@ -149,10 +146,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const firestore = db;
-
     const requestRef = doc(
-      firestore,
+      db,
       "households",
       profile.pendingHouseholdId,
       "joinRequests",
@@ -164,7 +159,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const request = { id: snapshot.id, ...snapshot.data() } as JoinRequest;
       setPendingRequest(request);
       if (request.status === "approved") {
-        await updateDoc(doc(firestore, "users", firebaseUser.uid), {
+        await updateDoc(doc(db, "users", firebaseUser.uid), {
           householdId: profile.pendingHouseholdId,
           memberId: request.requestedMemberId,
           displayName: request.displayName,
@@ -177,10 +172,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [firebaseUser, profile?.householdId, profile?.pendingHouseholdId]);
 
   useEffect(() => {
-  if (!realtimeDb || !household || !firebaseUser || household.ownerUid !== firebaseUser.uid) return;
-
-const database = realtimeDb;
-const householdPresenceRef = databaseRef(database, `presenceHouseholds/${household.id}`);
+    if (!realtimeDb || !household || !firebaseUser || household.ownerUid !== firebaseUser.uid) return;
+    const householdPresenceRef = databaseRef(realtimeDb, `presenceHouseholds/${household.id}`);
     void getDatabaseValue(householdPresenceRef).then(async (snapshot) => {
       const members = Object.fromEntries(household.memberUids.map((uid) => [uid, true]));
       if (!snapshot.exists()) {
@@ -190,10 +183,7 @@ const householdPresenceRef = databaseRef(database, `presenceHouseholds/${househo
           reading: {},
         });
       } else {
-       await updateDatabaseValue(
-  databaseRef(database, `presenceHouseholds/${household.id}/members`),
-  members,
-);
+        await updateDatabaseValue(databaseRef(realtimeDb, `presenceHouseholds/${household.id}/members`), members);
       }
     }).catch(() => undefined);
   }, [firebaseUser, household]);

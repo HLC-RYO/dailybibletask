@@ -22,9 +22,8 @@ export default function HomePage() {
   return (
     <>
       <section className="hero">
-        <p className="eyebrow">Together, one chapter a day</p>
-        <h1>宝を探そう</h1>
-        <p>毎日の1章を、無理なく。夫婦で学んだことを積み重ね、必要な時にすぐ見つけられる場所です。</p>
+        <div className="treasure-title"><span aria-hidden="true">✨</span><h1>宝を探そう</h1><span aria-hidden="true">🧰</span></div>
+        <p>今日の1章から、心に残る宝をひとつずつ。2人で楽しく積み重ねていこう。</p>
       </section>
 
       <DogCompanion name={companion.name} stats={companionStats} />
@@ -43,7 +42,7 @@ export default function HomePage() {
         <small>{memberNames[memberId]}さんの今日の1章</small>
         <h2>{loading ? "読み込み中…" : formatChapter(next.ref)}</h2>
         <p>{next.mode === "meeting" ? `今週の集会範囲 ${next.meetingIndex}/${next.meetingTotal}` : "通常通読の続き"}</p>
-        <a href="/reading" className="button">聖書の旅を開く</a>
+        <div className="today-card-actions"><a href="/reading" className="button">今日の宝を探す</a></div>
       </section>
 
       <section className="feature-grid" aria-label="機能一覧">

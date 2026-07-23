@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./brand-overrides.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { AppGate } from "@/components/AppGate";
 import { AppProvider } from "@/context/AppContext";
