@@ -1,0 +1,25 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { AppGate } from "@/components/AppGate";
+import { AppProvider } from "@/context/AppContext";
+
+export const metadata: Metadata = {
+  title: "ふたりの聖書の旅",
+  description: "夫婦で聖書通読と研究を続けるための管理アプリ",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="ja">
+      <body>
+        <ServiceWorkerRegister />
+        <AppProvider>
+          <AppGate>
+            <main className="app-shell">{children}</main>
+          </AppGate>
+        </AppProvider>
+      </body>
+    </html>
+  );
+}
