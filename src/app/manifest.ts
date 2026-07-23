@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "ふたりの聖書の旅",
-    short_name: "聖書の旅",
+    name: "宝を探そう",
+    short_name: "宝を探そう",
     description: "夫婦で聖書通読・研究・伝道資料・タスクを管理するアプリ",
     start_url: "/",
     display: "standalone",

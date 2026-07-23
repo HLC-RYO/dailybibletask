@@ -1,0 +1,50 @@
+/* v0.3.1 visual adjustments */
+.hero h1,
+.auth-card h1,
+.account-brand {
+  font-family: "Hiragino Maru Gothic ProN", "Hiragino Maru Gothic Pro", "Yu Gothic", "Meiryo", sans-serif;
+  font-weight: 800;
+  letter-spacing: .035em;
+}
+
+.hero h1 {
+  color: #315b4a;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, .75);
+}
+
+.today-card .button {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  margin-top: 16px;
+  margin-left: auto;
+  text-align: center;
+}
+
+.dog-image {
+  display: block;
+  width: min(132px, 90%);
+  height: auto;
+  transform-origin: 50% 90%;
+  filter: drop-shadow(0 10px 8px rgba(44, 64, 54, .13));
+}
+.stage-1 .dog-image { width: min(108px, 84%); }
+.stage-2 .dog-image { width: min(116px, 86%); }
+.stage-3 .dog-image { width: min(124px, 88%); }
+.stage-4 .dog-image { width: min(132px, 90%); }
+.companion-card.compact .dog-image { width: min(92px, 88%); }
+.mood-excited .dog-image { animation: dog-bounce .75s ease-in-out infinite alternate; }
+.mood-happy .dog-image { animation: dog-wag 1.1s ease-in-out infinite alternate; }
+.mood-sleepy .dog-image { animation: dog-breathe 2.8s ease-in-out infinite; filter: saturate(.75) drop-shadow(0 10px 8px rgba(44, 64, 54, .1)); }
+.mood-waiting .dog-image { filter: saturate(.82) drop-shadow(0 10px 8px rgba(44, 64, 54, .1)); }
+
+@media (max-width: 620px) {
+  .dog-image,
+  .stage-1 .dog-image,
+  .stage-2 .dog-image,
+  .stage-3 .dog-image,
+  .stage-4 .dog-image,
+  .companion-card.compact .dog-image {
+    width: min(82px, 90%);
+  }
+}

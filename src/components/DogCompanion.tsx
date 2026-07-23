@@ -21,7 +21,7 @@ export function DogCompanion({ name, stats, compact = false }: Props) {
     <section className={`companion-card mood-${stats.mood} ${compact ? "compact" : ""}`}>
       <div className={`dog-scene stage-${stats.stage}`} aria-label={`${name}、${stats.moodLabel}`}>
         <span className="dog-accessory" aria-hidden="true">{itemIcons[stats.latestUnlockedItem] ?? "🏷️"}</span>
-        <span className="dog-emoji" aria-hidden="true">🐶</span>
+        <img className="dog-image" src="/dachshund.svg" alt="" aria-hidden="true" />
         {stats.mood === "sleepy" && <span className="sleep-mark" aria-hidden="true">Zzz</span>}
         {stats.mood === "excited" && <span className="joy-mark" aria-hidden="true">♪</span>}
       </div>
@@ -37,18 +37,9 @@ export function DogCompanion({ name, stats, compact = false }: Props) {
         <p className="dog-message">「{stats.message}」</p>
 
         <div className="companion-meters">
-          <div>
-            <span>元気</span>
-            <strong className="heart-meter" aria-label={`元気 ${stats.energy}/5`}>{hearts}</strong>
-          </div>
-          <div>
-            <span>きずな</span>
-            <strong>{stats.bond}</strong>
-          </div>
-          <div>
-            <span>2人の累計</span>
-            <strong>{stats.totalChapters}章</strong>
-          </div>
+          <div><span>元気</span><strong className="heart-meter" aria-label={`元気 ${stats.energy}/5`}>{hearts}</strong></div>
+          <div><span>きずな</span><strong>{stats.bond}</strong></div>
+          <div><span>2人の累計</span><strong>{stats.totalChapters}章</strong></div>
         </div>
 
         {!compact && (

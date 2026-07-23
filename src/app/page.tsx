@@ -23,7 +23,7 @@ export default function HomePage() {
     <>
       <section className="hero">
         <p className="eyebrow">Together, one chapter a day</p>
-        <h1>ふたりの聖書の旅</h1>
+        <h1>宝を探そう</h1>
         <p>毎日の1章を、無理なく。夫婦で学んだことを積み重ね、必要な時にすぐ見つけられる場所です。</p>
       </section>
 
