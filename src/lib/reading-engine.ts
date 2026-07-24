@@ -1,4 +1,5 @@
 import { advanceChapter } from "./bible";
+import { canonicalChapterKey } from "./progress";
 import { getWeekStartISO } from "./date";
 import type { ChapterRef, MemberId, ReadingState, WeeklyMeetingRange } from "./types";
 
@@ -73,6 +74,7 @@ export function completeNextReading(
         : member.completedMeetingKeys,
     normalNext: next.mode === "normal" ? advanceChapter(next.ref) : member.normalNext,
     history: [record, ...member.history],
+    completedChapterKeys: Array.from(new Set([...(member.completedChapterKeys ?? []), canonicalChapterKey(next.ref)])),
   };
 
   return {

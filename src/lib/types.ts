@@ -26,6 +26,7 @@ export type MemberReadingState = {
   normalNext: ChapterRef;
   completedMeetingKeys: string[];
   history: ReadingRecord[];
+  completedChapterKeys?: string[];
   shareReadingPresence?: boolean;
 };
 

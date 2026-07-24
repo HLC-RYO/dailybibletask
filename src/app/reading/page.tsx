@@ -178,6 +178,11 @@ export default function ReadingPage() {
         </div>
       </section>
 
+      <a href="/reading/progress" className="progress-entry-card">
+        <div><span>全1189章を記録</span><strong>聖書全体の進捗を見る</strong><small>66冊ごと・章ごとに確認できます</small></div>
+        <b>›</b>
+      </a>
+
       <section className="panel">
         <div className="panel-title"><h2>今週の夫婦ゲージ</h2><strong>{percent}%</strong></div>
         <div className="progress-track"><div className="progress-bar" style={{ width: `${percent}%` }} /></div>

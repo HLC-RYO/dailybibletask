@@ -10,12 +10,14 @@ export const defaultReadingState: ReadingState = {
       normalNext: { bookId: "act", chapter: 11 },
       completedMeetingKeys: [],
       history: [],
+      completedChapterKeys: [],
       shareReadingPresence: true,
     },
     wife: {
       normalNext: { bookId: "act", chapter: 11 },
       completedMeetingKeys: [],
       history: [],
+      completedChapterKeys: [],
       shareReadingPresence: true,
     },
   },
@@ -33,10 +35,14 @@ export function normalizeReadingState(value?: Partial<ReadingState> | null): Rea
       husband: {
         ...defaultReadingState.members.husband,
         ...(value?.members?.husband ?? {}),
+        completedChapterKeys: value?.members?.husband?.completedChapterKeys
+          ?? Array.from(new Set((value?.members?.husband?.history ?? []).map((record) => `${record.ref.bookId}:${record.ref.chapter}`))),
       },
       wife: {
         ...defaultReadingState.members.wife,
         ...(value?.members?.wife ?? {}),
+        completedChapterKeys: value?.members?.wife?.completedChapterKeys
+          ?? Array.from(new Set((value?.members?.wife?.history ?? []).map((record) => `${record.ref.bookId}:${record.ref.chapter}`))),
       },
     },
     weeklyRanges: value?.weeklyRanges ?? defaultReadingState.weeklyRanges,
