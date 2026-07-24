@@ -806,3 +806,137 @@ label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weig
 @media (prefers-reduced-motion: reduce) {
   .layered-dachshund *, .dog-sparkles, .dog-zzz { animation: none !important; }
 }
+
+/* v0.9 character-sheet watercolor mascot */
+.watercolor-dachshund {
+  width: min(100%, 540px);
+  margin-inline: auto;
+  perspective: 900px;
+}
+.watercolor-dachshund.is-compact { width: 150px; }
+.watercolor-dog-stage {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  min-height: 290px;
+  transform-style: preserve-3d;
+}
+.watercolor-dachshund.is-compact .watercolor-dog-stage { min-height: 128px; }
+.watercolor-dog-pose {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: min(38vw, 310px);
+  object-fit: contain;
+  object-position: center bottom;
+  user-select: none;
+  filter: drop-shadow(0 14px 13px rgba(92, 65, 34, .16));
+  transform-origin: 50% 88%;
+  animation: watercolor-idle 3.8s ease-in-out infinite;
+}
+.watercolor-dachshund.is-compact .watercolor-dog-pose { height: 122px; }
+.action-reading .watercolor-dog-pose { animation: watercolor-reading 2.8s ease-in-out infinite; }
+.action-happy .watercolor-dog-pose,
+.action-cheering .watercolor-dog-pose { animation: watercolor-happy 1.15s ease-in-out infinite; }
+.action-excited .watercolor-dog-pose { animation: watercolor-excited .72s ease-in-out infinite alternate; }
+.action-waiting .watercolor-dog-pose { animation: watercolor-waiting 5.2s ease-in-out infinite; }
+.action-sleepy .watercolor-dog-pose { animation: watercolor-sleep 3.6s ease-in-out infinite; }
+.watercolor-dog-blink {
+  position: absolute;
+  left: 50%;
+  top: 24%;
+  width: 28%;
+  height: 10%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(180deg, transparent 42%, rgba(112, 67, 31, .28) 44% 58%, transparent 60%);
+  border-radius: 50%;
+  animation: watercolor-blink 5.4s linear infinite;
+  mix-blend-mode: multiply;
+}
+.action-reading .watercolor-dog-blink,
+.action-sleepy .watercolor-dog-blink { display: none; }
+.page-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  width: 62%;
+  height: 28%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 226, 117, .32), transparent 68%);
+  animation: page-glow 2.2s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.watercolor-sparkles {
+  position: absolute;
+  inset: 5% 8% auto;
+  display: flex;
+  justify-content: space-between;
+  color: #f3a71c;
+  font-size: clamp(18px, 5vw, 34px);
+  pointer-events: none;
+}
+.watercolor-sparkles i { font-style: normal; animation: watercolor-sparkle 1.05s ease-in-out infinite alternate; }
+.watercolor-sparkles i:nth-child(2) { animation-delay: .22s; }
+.watercolor-sparkles i:nth-child(3) { animation-delay: .44s; }
+.watercolor-zzz {
+  position: absolute;
+  top: 10%;
+  right: 12%;
+  color: #6b8eaf;
+  font-size: clamp(20px, 5vw, 34px);
+  font-weight: 900;
+  letter-spacing: .08em;
+  animation: watercolor-zzz 2.4s ease-in-out infinite;
+}
+@keyframes watercolor-idle {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-4px) scale(1.008); }
+}
+@keyframes watercolor-reading {
+  0%, 100% { transform: translateY(0) rotate(-.4deg); }
+  50% { transform: translateY(3px) rotate(.7deg) scale(.995); }
+}
+@keyframes watercolor-happy {
+  0%, 100% { transform: translateY(0) rotate(-1.2deg); }
+  50% { transform: translateY(-8px) rotate(1.6deg); }
+}
+@keyframes watercolor-excited {
+  from { transform: translateY(2px) rotate(-2deg) scale(.99); }
+  to { transform: translateY(-15px) rotate(2deg) scale(1.025); }
+}
+@keyframes watercolor-waiting {
+  0%, 72%, 100% { transform: translateY(0) rotate(0); }
+  82% { transform: translateY(-3px) rotate(-3deg); }
+  91% { transform: translateY(-3px) rotate(3deg); }
+}
+@keyframes watercolor-sleep {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(.985) translateY(3px); }
+}
+@keyframes watercolor-blink {
+  0%, 43%, 46%, 100% { opacity: 0; transform: translateX(-50%) scaleY(.2); }
+  44%, 45% { opacity: .58; transform: translateX(-50%) scaleY(1); }
+}
+@keyframes watercolor-sparkle { from { opacity: .25; transform: scale(.7) rotate(-10deg); } to { opacity: 1; transform: scale(1.18) rotate(10deg); } }
+@keyframes watercolor-zzz { 0% { opacity: 0; transform: translateY(12px) scale(.82); } 45% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px) scale(1.08); } }
+@keyframes page-glow { from { opacity: .3; transform: translateX(-50%) scale(.9); } to { opacity: .9; transform: translateX(-50%) scale(1.08); } }
+
+.dog-scene .watercolor-dachshund { width: 100%; }
+.dog-scene .watercolor-dachshund.is-compact { width: 138px; }
+
+@media (max-width: 620px) {
+  .watercolor-dog-stage { min-height: 230px; }
+  .watercolor-dog-pose { height: min(67vw, 270px); }
+  .watercolor-dachshund.is-compact .watercolor-dog-stage { min-height: 112px; }
+  .watercolor-dachshund.is-compact .watercolor-dog-pose { height: 108px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .watercolor-dog-pose,
+  .watercolor-dog-blink,
+  .watercolor-sparkles i,
+  .watercolor-zzz,
+  .page-glow { animation: none !important; }
+}
