@@ -111,7 +111,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const userRef = doc(db, "users", user.uid);
+      const userRef = doc(db!, "users", user.uid);
       const snapshot = await getDoc(userRef);
       if (!snapshot.exists()) {
         await setDoc(userRef, profileFromUser(user));
@@ -133,7 +133,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!db || !firebaseUser) return;
-    return onSnapshot(doc(db, "users", firebaseUser.uid), (snapshot) => {
+    return onSnapshot(doc(db!, "users", firebaseUser.uid), (snapshot) => {
       if (snapshot.exists()) {
         setProfile(snapshot.data() as UserProfile);
       }
@@ -159,7 +159,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const request = { id: snapshot.id, ...snapshot.data() } as JoinRequest;
       setPendingRequest(request);
       if (request.status === "approved") {
-        await updateDoc(doc(db, "users", firebaseUser.uid), {
+        await updateDoc(doc(db!, "users", firebaseUser.uid), {
           householdId: profile.pendingHouseholdId,
           memberId: request.requestedMemberId,
           displayName: request.displayName,
@@ -173,7 +173,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!realtimeDb || !household || !firebaseUser || household.ownerUid !== firebaseUser.uid) return;
-    const householdPresenceRef = databaseRef(realtimeDb, `presenceHouseholds/${household.id}`);
+    const database = realtimeDb;
+    const householdPresenceRef = databaseRef(database, `presenceHouseholds/${household.id}`);
     void getDatabaseValue(householdPresenceRef).then(async (snapshot) => {
       const members = Object.fromEntries(household.memberUids.map((uid) => [uid, true]));
       if (!snapshot.exists()) {
@@ -183,7 +184,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           reading: {},
         });
       } else {
-        await updateDatabaseValue(databaseRef(realtimeDb, `presenceHouseholds/${household.id}/members`), members);
+        await updateDatabaseValue(databaseRef(database, `presenceHouseholds/${household.id}/members`), members);
       }
     }).catch(() => undefined);
   }, [firebaseUser, household]);
@@ -197,15 +198,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     const householdId = profile.householdId;
-    const unsubHousehold = onSnapshot(doc(db, "households", householdId), (snapshot) => {
+    const unsubHousehold = onSnapshot(doc(db!, "households", householdId), (snapshot) => {
       if (snapshot.exists()) {
         setHousehold({ id: snapshot.id, ...snapshot.data() } as Household);
       }
     });
-    const unsubMembers = onSnapshot(collection(db, "households", householdId, "members"), (snapshot) => {
+    const unsubMembers = onSnapshot(collection(db!, "households", householdId, "members"), (snapshot) => {
       setHouseholdMembers(snapshot.docs.map((item) => item.data() as HouseholdMember));
     });
-    const unsubRequests = onSnapshot(collection(db, "households", householdId, "joinRequests"), (snapshot) => {
+    const unsubRequests = onSnapshot(collection(db!, "households", householdId, "joinRequests"), (snapshot) => {
       setJoinRequests(
         snapshot.docs
           .map((item) => ({ id: item.id, ...item.data() } as JoinRequest))
@@ -244,18 +245,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const createHousehold = useCallback(
     async (input: { householdName: string; displayName: string; memberId: MemberId }) => {
       if (!db || !firebaseUser) throw new Error("ログインが必要です。");
-      const householdRef = doc(collection(db, "households"));
+      const householdRef = doc(collection(db!, "households"));
       const inviteCode = createInviteCode();
-      const inviteRef = doc(db, "invites", inviteCode);
-      const memberRef = doc(db, "households", householdRef.id, "members", firebaseUser.uid);
-      const readingRef = doc(db, "households", householdRef.id, "app", "reading");
-      const userRef = doc(db, "users", firebaseUser.uid);
+      const inviteRef = doc(db!, "invites", inviteCode);
+      const memberRef = doc(db!, "households", householdRef.id, "members", firebaseUser.uid);
+      const readingRef = doc(db!, "households", householdRef.id, "app", "reading");
+      const userRef = doc(db!, "users", firebaseUser.uid);
       const now = nowIso();
       const displayName = input.displayName.trim() || firebaseUser.displayName || "メンバー";
       const householdName = input.householdName.trim() || "わたしたちの家庭";
       const openMemberId: MemberId = input.memberId === "husband" ? "wife" : "husband";
 
-      const batch = writeBatch(db);
+      const batch = writeBatch(db!);
       batch.set(householdRef, {
         name: householdName,
         ownerUid: firebaseUser.uid,
@@ -308,7 +309,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (input: { inviteCode: string; displayName: string }) => {
       if (!db || !firebaseUser) throw new Error("ログインが必要です。");
       const inviteCode = input.inviteCode.trim().toUpperCase();
-      const inviteSnapshot = await getDoc(doc(db, "invites", inviteCode));
+      const inviteSnapshot = await getDoc(doc(db!, "invites", inviteCode));
       if (!inviteSnapshot.exists() || inviteSnapshot.data().active !== true) {
         throw new Error("招待コードが見つからないか、すでに使用済みです。");
       }
@@ -318,8 +319,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
       const now = nowIso();
       const displayName = input.displayName.trim() || firebaseUser.displayName || "メンバー";
-      const requestRef = doc(db, "households", invite.householdId, "joinRequests", firebaseUser.uid);
-      const batch = writeBatch(db);
+      const requestRef = doc(db!, "households", invite.householdId, "joinRequests", firebaseUser.uid);
+      const batch = writeBatch(db!);
       batch.set(requestRef, {
         requesterUid: firebaseUser.uid,
         displayName,
@@ -332,7 +333,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updatedAt: now,
       });
       batch.set(
-        doc(db, "users", firebaseUser.uid),
+        doc(db!, "users", firebaseUser.uid),
         {
           displayName,
           pendingHouseholdId: invite.householdId,
@@ -348,10 +349,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const clearPendingJoin = useCallback(async () => {
     if (!db || !firebaseUser || !profile?.pendingHouseholdId) return;
-    const batch = writeBatch(db);
-    batch.delete(doc(db, "households", profile.pendingHouseholdId, "joinRequests", firebaseUser.uid));
+    const batch = writeBatch(db!);
+    batch.delete(doc(db!, "households", profile.pendingHouseholdId, "joinRequests", firebaseUser.uid));
     batch.set(
-      doc(db, "users", firebaseUser.uid),
+      doc(db!, "users", firebaseUser.uid),
       { pendingHouseholdId: null, pendingInviteCode: null, updatedAt: nowIso() },
       { merge: true },
     );
@@ -361,10 +362,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const approveJoinRequest = useCallback(
     async (request: JoinRequest) => {
       if (!db || !firebaseUser || !household) return;
-      const householdRef = doc(db, "households", household.id);
-      const requestRef = doc(db, "households", household.id, "joinRequests", request.requesterUid);
-      const memberRef = doc(db, "households", household.id, "members", request.requesterUid);
-      const inviteRef = doc(db, "invites", request.inviteCode);
+      const householdRef = doc(db!, "households", household.id);
+      const requestRef = doc(db!, "households", household.id, "joinRequests", request.requesterUid);
+      const memberRef = doc(db!, "households", household.id, "members", request.requesterUid);
+      const inviteRef = doc(db!, "invites", request.inviteCode);
       const now = nowIso();
 
       let realtimeMembershipAdded = false;
@@ -389,7 +390,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        await runTransaction(db, async (transaction) => {
+        await runTransaction(db!, async (transaction) => {
           const householdSnapshot = await transaction.get(householdRef);
           const requestSnapshot = await transaction.get(requestRef);
           if (!householdSnapshot.exists() || !requestSnapshot.exists()) {
@@ -431,7 +432,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const rejectJoinRequest = useCallback(
     async (request: JoinRequest) => {
       if (!db || !household) return;
-      await updateDoc(doc(db, "households", household.id, "joinRequests", request.requesterUid), {
+      await updateDoc(doc(db!, "households", household.id, "joinRequests", request.requesterUid), {
         status: "rejected",
         updatedAt: nowIso(),
       });
@@ -444,14 +445,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (!db || !firebaseUser || !profile?.householdId || !profile.memberId) return;
       const clean = displayName.trim();
       if (!clean) return;
-      const batch = writeBatch(db);
+      const batch = writeBatch(db!);
       batch.set(
-        doc(db, "users", firebaseUser.uid),
+        doc(db!, "users", firebaseUser.uid),
         { displayName: clean, updatedAt: nowIso() },
         { merge: true },
       );
       batch.set(
-        doc(db, "households", profile.householdId, "members", firebaseUser.uid),
+        doc(db!, "households", profile.householdId, "members", firebaseUser.uid),
         { displayName: clean },
         { merge: true },
       );
