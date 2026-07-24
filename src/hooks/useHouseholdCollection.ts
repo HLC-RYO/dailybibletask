@@ -19,7 +19,7 @@ export function useHouseholdCollection<T extends { id: string }>(collectionName:
 
   useEffect(() => {
     if (!db || !household) return;
-    return onSnapshot(collection(db, "households", household.id, collectionName), (snapshot) => {
+    return onSnapshot(collection(db!, "households", household.id, collectionName), (snapshot) => {
       setItems(snapshot.docs.map((item) => ({ id: item.id, ...item.data() } as T)));
       setLoading(false);
     });
@@ -28,7 +28,7 @@ export function useHouseholdCollection<T extends { id: string }>(collectionName:
   const addItem = useCallback(
     async (item: T) => {
       if (!db || !household) return;
-      const itemRef = doc(db, "households", household.id, collectionName, item.id);
+      const itemRef = doc(db!, "households", household.id, collectionName, item.id);
       const { id: _id, ...data } = item;
       await setDoc(itemRef, data);
     },
@@ -39,7 +39,7 @@ export function useHouseholdCollection<T extends { id: string }>(collectionName:
     async (id: string, patch: Partial<T>) => {
       if (!db || !household) return;
       const { id: _id, ...data } = patch;
-      await updateDoc(doc(db, "households", household.id, collectionName, id), data);
+      await updateDoc(doc(db!, "households", household.id, collectionName, id), data);
     },
     [collectionName, household],
   );
@@ -47,7 +47,7 @@ export function useHouseholdCollection<T extends { id: string }>(collectionName:
   const removeItem = useCallback(
     async (id: string) => {
       if (!db || !household) return;
-      await deleteDoc(doc(db, "households", household.id, collectionName, id));
+      await deleteDoc(doc(db!, "households", household.id, collectionName, id));
     },
     [collectionName, household],
   );

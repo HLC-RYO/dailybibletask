@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { AnimatedHeroMascot } from "@/components/AnimatedHeroMascot";
 import { useAppContext } from "@/context/AppContext";
 import { useReadingPresence } from "@/hooks/useReadingPresence";
@@ -9,14 +10,68 @@ import { getCompanionStats } from "@/lib/companion";
 import { getCompanionProfile } from "@/lib/defaults";
 import { getNextReading } from "@/lib/reading-engine";
 
+type DailyTextResponse = {
+  date: string;
+  scripture: string | null;
+  sourceUrl: string;
+  detailUrl: string;
+  error?: string;
+};
+
 export default function HomePage() {
   const { memberId, partnerId, memberNames } = useAppContext();
-  const [reading, , loading] = useSharedReadingState();
+  const [reading, setReading, loading] = useSharedReadingState();
   const presence = useReadingPresence();
   const next = getNextReading(reading, memberId);
   const partnerPresence = presence[partnerId];
   const companion = getCompanionProfile(reading);
   const stats = getCompanionStats(reading, presence);
+  const [dailyText, setDailyText] = useState<DailyTextResponse | null>(null);
+  const [dailyTextLoading, setDailyTextLoading] = useState(true);
+  const [dailyTextBusy, setDailyTextBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setDailyTextLoading(true);
+      try {
+        const response = await fetch("/api/daily-text", { cache: "no-store" });
+        const value = await response.json() as DailyTextResponse;
+        if (!cancelled) setDailyText(value);
+      } catch {
+        if (!cancelled) setDailyText(null);
+      } finally {
+        if (!cancelled) setDailyTextLoading(false);
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, []);
+
+  const dailyTextDone = useMemo(() => {
+    if (!dailyText?.date) return false;
+    return reading.dailyTextCompletedDates?.[memberId]?.includes(dailyText.date) ?? false;
+  }, [dailyText?.date, memberId, reading.dailyTextCompletedDates]);
+
+  const completeDailyText = async () => {
+    if (!dailyText?.date || dailyTextDone) return;
+    setDailyTextBusy(true);
+    try {
+      await setReading((current) => ({
+        ...current,
+        dailyTextCompletedDates: {
+          husband: current.dailyTextCompletedDates?.husband ?? [],
+          wife: current.dailyTextCompletedDates?.wife ?? [],
+          [memberId]: Array.from(new Set([
+            ...(current.dailyTextCompletedDates?.[memberId] ?? []),
+            dailyText.date,
+          ])),
+        },
+      }));
+    } finally {
+      setDailyTextBusy(false);
+    }
+  };
 
   return (
     <div className="treasure-home">
@@ -77,18 +132,31 @@ export default function HomePage() {
       </section>
 
       <section className="companion-summary-card">
-        <div className="sleeping-dog" aria-hidden="true">🐕</div>
         <div>
           <span className="summary-label">今日のワンちゃん</span>
           <strong>{stats.moodLabel}</strong>
-          <small>元気 {stats.energy}/5 ・ きずな {stats.bond} ・ 2人で {stats.totalChapters}章</small>
+          <small>元気 {stats.energy}/5 ・ きずな {stats.bond} ・ 経験値 {stats.experience} XP</small>
         </div>
       </section>
 
-      <section className="daily-scripture-card">
-        <span className="scripture-label">今日の聖句</span>
-        <p>ここには、jw.orgに掲載されている聖書から選んだ聖句だけを表示します。</p>
-        <a href="https://www.jw.org/ja/ライブラリー/聖書/" target="_blank" rel="noreferrer">jw.orgの聖書を開く</a>
+      <section className={`daily-scripture-card ${dailyTextDone ? "completed" : ""}`}>
+        <div className="daily-scripture-heading">
+          <span className="scripture-label">日々の聖句</span>
+          {dailyTextDone && <span className="daily-complete-badge">完了 +5 XP</span>}
+        </div>
+        {dailyTextLoading ? (
+          <p>今日の聖句を読み込んでいます…</p>
+        ) : dailyText?.scripture ? (
+          <p className="daily-scripture-text">{dailyText.scripture}</p>
+        ) : (
+          <p>今日の聖句を取得できませんでした。公式ページで確認してください。</p>
+        )}
+        <div className="daily-scripture-actions">
+          <a href="https://wol.jw.org/ja/wol/h/r7/lp-j" target="_blank" rel="noreferrer">解説をWOLで読む</a>
+          <button className="button" disabled={!dailyText?.scripture || dailyTextDone || dailyTextBusy} onClick={completeDailyText}>
+            {dailyTextDone ? "読了済み ✓" : dailyTextBusy ? "保存中…" : "読んだ・完了 +5 XP"}
+          </button>
+        </div>
       </section>
 
       <nav className="home-more-links" aria-label="その他の機能">

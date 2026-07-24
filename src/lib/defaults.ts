@@ -25,6 +25,7 @@ export const defaultReadingState: ReadingState = {
     { weekStart: "2026-07-20", bookId: "jer", startChapter: 18, endChapter: 19 },
   ],
   companion: defaultCompanionProfile,
+  dailyTextCompletedDates: { husband: [], wife: [] },
 };
 
 export function normalizeReadingState(value?: Partial<ReadingState> | null): ReadingState {
@@ -47,6 +48,10 @@ export function normalizeReadingState(value?: Partial<ReadingState> | null): Rea
     },
     weeklyRanges: value?.weeklyRanges ?? defaultReadingState.weeklyRanges,
     companion: { ...defaultCompanionProfile, ...(value?.companion ?? {}) },
+    dailyTextCompletedDates: {
+      husband: value?.dailyTextCompletedDates?.husband ?? [],
+      wife: value?.dailyTextCompletedDates?.wife ?? [],
+    },
   };
 }
 

@@ -462,7 +462,7 @@ label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weig
 .treasure-chest { font-size: 38px; transform: rotate(5deg); }
 .hero-mascot-wrap { position: relative; min-height: 315px; display: grid; align-items: end; }
 .hero-mascot { display: block; width: 100%; height: 350px; object-fit: cover; object-position: center 53%; }
-.mascot-speech { position: absolute; right: 18px; top: 12px; max-width: min(46%, 290px); padding: 10px 14px; border: 2px solid #e9c987; border-radius: 20px; background: rgba(255,255,255,.9); color: #604126; box-shadow: 0 8px 20px rgba(91,65,28,.11); }
+.mascot-speech { position: absolute; right: 18px; bottom: 16px; max-width: min(46%, 290px); padding: 10px 14px; border: 2px solid #e9c987; border-radius: 20px; background: rgba(255,255,255,.9); color: #604126; box-shadow: 0 8px 20px rgba(91,65,28,.11); }
 .mascot-speech strong, .mascot-speech span { display: block; }
 .mascot-speech strong { color: var(--brand); font-size: 12px; }
 .mascot-speech span { margin-top: 3px; font-size: 13px; line-height: 1.45; font-weight: 700; }
@@ -488,15 +488,20 @@ label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weig
 .quick-card.purple { background: #f5eefb; border-color: #cbb2dd; color: #6342a2; }
 
 .companion-summary-card, .daily-scripture-card { border: 2px solid #ead39e; border-radius: 22px; background: rgba(255,252,240,.94); box-shadow: 0 10px 22px rgba(81,65,36,.07); }
-.companion-summary-card { display: flex; align-items: center; gap: 15px; padding: 15px 18px; }
-.sleeping-dog { display: grid; place-items: center; width: 84px; height: 70px; border-radius: 20px; background: #f6dda2; font-size: 48px; }
-.companion-summary-card > div:last-child { display: grid; gap: 3px; }
+.companion-summary-card { padding: 15px 18px; }
+.companion-summary-card > div { display: grid; gap: 3px; }
 .summary-label { display: inline-flex; width: fit-content; padding: 4px 9px; border-radius: 99px; background: #4d9253; color: white; font-size: 11px; font-weight: 800; }
 .companion-summary-card small { color: var(--muted); }
-.daily-scripture-card { padding: 17px 19px; }
+.daily-scripture-card { padding: 17px 19px; transition: opacity .2s ease, border-color .2s ease; }
+.daily-scripture-card.completed { opacity: .82; border-color: #a9c68e; }
+.daily-scripture-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.daily-complete-badge { padding: 5px 9px; border-radius: 999px; background: #e3f1d8; color: #39713e; font-size: 11px; font-weight: 900; }
 .scripture-label { display: inline-flex; padding: 5px 12px; border-radius: 999px; background: #4d9253; color: white; font-weight: 900; }
 .daily-scripture-card p { margin: 11px 0 8px; color: #4f463a; line-height: 1.7; }
-.daily-scripture-card a { color: var(--brand); font-weight: 800; text-decoration: underline; }
+.daily-scripture-text { font-size: 16px; font-weight: 700; }
+.daily-scripture-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 13px; }
+.daily-scripture-actions a { color: var(--brand); font-weight: 800; text-decoration: underline; }
+.daily-scripture-actions .button { flex: 0 0 auto; }
 .home-more-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .home-more-links a { padding: 13px; border: 1px solid var(--border); border-radius: 15px; background: var(--surface); text-align: center; font-weight: 800; }
 
@@ -504,10 +509,12 @@ label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weig
   .treasure-hero { border-radius: 24px; }
   .hero-mascot-wrap { min-height: 260px; }
   .hero-mascot { height: 285px; object-position: center 55%; }
-  .mascot-speech { right: 10px; top: 3px; max-width: 50%; padding: 8px 10px; }
+  .mascot-speech { right: 10px; bottom: 8px; max-width: 58%; padding: 8px 10px; }
   .today-treasure-card { grid-template-columns: 58px 1fr; gap: 11px; padding: 14px; }
   .today-book-icon { width: 58px; height: 58px; font-size: 32px; }
   .treasure-action { grid-column: 1 / -1; justify-self: end; min-height: 46px; padding: 10px 16px; }
+  .daily-scripture-actions { align-items: stretch; flex-direction: column; }
+  .daily-scripture-actions .button { width: 100%; }
   .quick-card { min-height: 106px; padding: 13px; align-items: flex-start; }
   .quick-card strong { font-size: 17px; }
   .quick-icon { font-size: 33px; }

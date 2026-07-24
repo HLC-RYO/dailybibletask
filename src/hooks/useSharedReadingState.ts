@@ -16,7 +16,8 @@ export function useSharedReadingState() {
 
   useEffect(() => {
     if (!db || !household) return;
-    const readingRef = doc(db, "households", household.id, "app", "reading");
+    const firestore = db;
+    const readingRef = doc(firestore, "households", household.id, "app", "reading");
     return onSnapshot(readingRef, async (snapshot) => {
       if (!snapshot.exists()) {
         await setDoc(readingRef, defaultReadingState);
@@ -31,8 +32,9 @@ export function useSharedReadingState() {
   const updateState = useCallback(
     async (updater: ReadingStateUpdater) => {
       if (!db || !household) return;
-      const readingRef = doc(db, "households", household.id, "app", "reading");
-      await runTransaction(db, async (transaction) => {
+      const firestore = db;
+      const readingRef = doc(firestore, "households", household.id, "app", "reading");
+      await runTransaction(firestore, async (transaction) => {
         const snapshot = await transaction.get(readingRef);
         const current = snapshot.exists()
           ? normalizeReadingState(snapshot.data() as Partial<ReadingState>)

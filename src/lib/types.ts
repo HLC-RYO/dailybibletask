@@ -38,6 +38,7 @@ export type ReadingState = {
   members: Record<MemberId, MemberReadingState>;
   weeklyRanges: WeeklyMeetingRange[];
   companion?: CompanionProfile;
+  dailyTextCompletedDates?: Partial<Record<MemberId, string[]>>;
 };
 
 export type ReadingPresence = {
@@ -59,6 +60,8 @@ export type CompanionStats = {
   energy: number;
   bond: number;
   totalChapters: number;
+  dailyTextCompletions: number;
+  experience: number;
   stage: number;
   stageName: string;
   stageProgress: number;

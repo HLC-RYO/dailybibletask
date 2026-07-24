@@ -11,19 +11,19 @@ import type {
 
 const STAGES = [
   { minimum: 0, name: "ちいさな子犬" },
-  { minimum: 8, name: "元気な子犬" },
-  { minimum: 25, name: "若い相棒" },
-  { minimum: 60, name: "頼もしい相棒" },
-  { minimum: 120, name: "聖書の旅のパートナー" },
+  { minimum: 80, name: "元気な子犬" },
+  { minimum: 250, name: "若い相棒" },
+  { minimum: 600, name: "頼もしい相棒" },
+  { minimum: 1200, name: "聖書の旅のパートナー" },
 ] as const;
 
 const ITEMS = [
   { minimum: 0, name: "おそろいの名札" },
-  { minimum: 5, name: "ふかふかクッション" },
-  { minimum: 15, name: "みどりのバンダナ" },
-  { minimum: 35, name: "小さな本棚" },
-  { minimum: 70, name: "旅の首輪" },
-  { minimum: 120, name: "夕焼けの丘" },
+  { minimum: 50, name: "ふかふかクッション" },
+  { minimum: 150, name: "みどりのバンダナ" },
+  { minimum: 350, name: "小さな本棚" },
+  { minimum: 700, name: "旅の首輪" },
+  { minimum: 1200, name: "夕焼けの丘" },
 ] as const;
 
 function recordDateKey(record: ReadingRecord): string {
@@ -54,6 +54,9 @@ export function getCompanionStats(
   const wifeHistory = state.members.wife.history;
   const allHistory = [...husbandHistory, ...wifeHistory];
   const totalChapters = allHistory.length;
+  const dailyTextCompletions =
+    (state.dailyTextCompletedDates?.husband?.length ?? 0) +
+    (state.dailyTextCompletedDates?.wife?.length ?? 0);
   const today = toLocalISODate(now);
   const husbandToday = completedToday(husbandHistory, today);
   const wifeToday = completedToday(wifeHistory, today);
@@ -61,6 +64,7 @@ export function getCompanionStats(
   const activeReaders = (["husband", "wife"] as MemberId[]).filter((id) => Boolean(live[id]));
   const noteCount = allHistory.filter((record) => record.note).length;
   const sharedDays = sharedReadingDays(state);
+  const experience = totalChapters * 10 + dailyTextCompletions * 5 + noteCount * 2 + sharedDays * 5;
 
   let mood: CompanionStats["mood"] = "waiting";
   let moodLabel = "のんびり待っています";
@@ -110,36 +114,30 @@ export function getCompanionStats(
   }
 
   const stageIndex = STAGES.reduce(
-    (current, stage, index) => (totalChapters >= stage.minimum ? index : current),
+    (current, stage, index) => (experience >= stage.minimum ? index : current),
     0,
   );
   const currentStage = STAGES[stageIndex];
   const nextStage = STAGES[stageIndex + 1];
   const stageProgress = nextStage
-    ? Math.max(
-        0,
-        Math.min(
-          100,
-          Math.round(
-            ((totalChapters - currentStage.minimum) / (nextStage.minimum - currentStage.minimum)) * 100,
-          ),
-        ),
-      )
+    ? Math.max(0, Math.min(100, Math.round(((experience - currentStage.minimum) / (nextStage.minimum - currentStage.minimum)) * 100)))
     : 100;
-  const unlockedItems = ITEMS.filter((item) => totalChapters >= item.minimum).map((item) => item.name);
+  const unlockedItems = ITEMS.filter((item) => experience >= item.minimum).map((item) => item.name);
 
   return {
     mood,
     moodLabel,
     message,
     energy,
-    bond: Math.min(100, totalChapters * 2 + sharedDays * 5 + noteCount),
+    bond: Math.min(100, totalChapters * 2 + sharedDays * 5 + noteCount + dailyTextCompletions * 2),
     totalChapters,
+    dailyTextCompletions,
+    experience,
     stage: stageIndex,
     stageName: currentStage.name,
     stageProgress,
     nextStageName: nextStage?.name,
-    chaptersToNextStage: nextStage ? Math.max(0, nextStage.minimum - totalChapters) : 0,
+    chaptersToNextStage: nextStage ? Math.max(0, nextStage.minimum - experience) : 0,
     unlockedItems,
     latestUnlockedItem: unlockedItems.at(-1) ?? "おそろいの名札",
   };

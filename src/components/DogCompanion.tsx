@@ -24,7 +24,7 @@ export function DogCompanion({ name, stats, compact = false }: Props) {
           <div><span>きずな</span><strong>{stats.bond}</strong></div>
           <div><span>2人の累計</span><strong>{stats.totalChapters}章</strong></div>
         </div>
-        {!compact && <div className="growth-area"><div className="growth-title"><span>{stats.nextStageName ? `次の成長：${stats.nextStageName}` : "最高のパートナーに成長しました"}</span><strong>{stats.nextStageName ? `あと${stats.chaptersToNextStage}章` : "100%"}</strong></div><div className="progress-track"><div className="progress-bar" style={{ width: `${stats.stageProgress}%` }} /></div><small>最近のごほうび：{stats.latestUnlockedItem}</small></div>}
+        {!compact && <div className="growth-area"><div className="growth-title"><span>{stats.nextStageName ? `次の成長：${stats.nextStageName}` : "最高のパートナーに成長しました"}</span><strong>{stats.nextStageName ? `あと${stats.chaptersToNextStage} XP` : "100%"}</strong></div><div className="progress-track"><div className="progress-bar" style={{ width: `${stats.stageProgress}%` }} /></div><small>最近のごほうび：{stats.latestUnlockedItem}</small></div>}
       </div>
     </section>
   );
