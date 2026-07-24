@@ -32,6 +32,7 @@ export default function HomePage() {
             name={companion.name}
             stats={stats}
             partnerReading={Boolean(partnerPresence)}
+            selfReading={Boolean(presence[memberId])}
           />
           <div className="mascot-speech">
             <strong>{companion.name}</strong>

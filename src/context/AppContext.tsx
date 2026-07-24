@@ -295,7 +295,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await batch.commit();
 
       if (realtimeDb) {
-        await setDatabaseValue(databaseRef(realtimeDb, `presenceHouseholds/${householdRef.id}`), {
+        const database = realtimeDb;
+        await setDatabaseValue(databaseRef(database, `presenceHouseholds/${householdRef.id}`), {
           ownerUid: firebaseUser.uid,
           members: { [firebaseUser.uid]: true },
           reading: {},
@@ -369,8 +370,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const now = nowIso();
 
       let realtimeMembershipAdded = false;
-      if (realtimeDb) {
-        const householdPresenceRef = databaseRef(realtimeDb, `presenceHouseholds/${household.id}`);
+      const realtimeDatabase = realtimeDb;
+      if (realtimeDatabase) {
+        const database = realtimeDatabase;
+        const householdPresenceRef = databaseRef(database, `presenceHouseholds/${household.id}`);
         const presenceSnapshot = await getDatabaseValue(householdPresenceRef);
         if (!presenceSnapshot.exists()) {
           await setDatabaseValue(householdPresenceRef, {
@@ -382,7 +385,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             reading: {},
           });
         } else {
-          await updateDatabaseValue(databaseRef(realtimeDb, `presenceHouseholds/${household.id}/members`), {
+          await updateDatabaseValue(databaseRef(database, `presenceHouseholds/${household.id}/members`), {
             [request.requesterUid]: true,
           });
         }
@@ -418,8 +421,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           transaction.update(inviteRef, { active: false, usedAt: now });
         });
       } catch (error) {
-        if (realtimeDb && realtimeMembershipAdded) {
-          await updateDatabaseValue(databaseRef(realtimeDb, `presenceHouseholds/${household.id}/members`), {
+        if (realtimeDatabase && realtimeMembershipAdded) {
+          await updateDatabaseValue(databaseRef(realtimeDatabase, `presenceHouseholds/${household.id}/members`), {
             [request.requesterUid]: null,
           });
         }

@@ -653,3 +653,65 @@ label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weig
   .mascot-heart,
   .mascot-zzz { animation: none !important; }
 }
+
+/* v0.6 character-sheet mascot system */
+.mascot-character-picture {
+  width: min(100%, 520px);
+  min-height: 285px;
+  display: grid;
+  place-items: end center;
+  overflow: visible;
+}
+.character-mascot {
+  position: relative;
+  z-index: 2;
+  width: auto;
+  height: min(36vw, 300px);
+  max-width: 96%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 18px 14px rgba(94, 70, 37, .18));
+  transform-origin: 50% 92%;
+}
+.page-turn-frame {
+  position: absolute;
+  inset: auto 0 0;
+  margin: auto;
+  opacity: 0;
+  animation: mascot-page-turn 4.8s ease-in-out infinite;
+}
+.mascot-reading .character-mascot:not(.page-turn-frame) { animation: mascot-reading-breathe 3.2s ease-in-out infinite; }
+.mascot-cheering .character-mascot { animation: mascot-cheer 1.05s ease-in-out infinite alternate; }
+.mascot-excited .character-mascot { animation: mascot-celebrate .72s ease-in-out infinite alternate; }
+.mascot-happy .character-mascot { animation: mascot-hop 1.35s ease-in-out infinite; }
+.mascot-content .character-mascot { animation: mascot-idle 3.5s ease-in-out infinite; }
+.mascot-waiting .character-mascot { animation: mascot-wait 4.8s ease-in-out infinite; }
+.mascot-sleepy .character-mascot { animation: mascot-sleep 3.2s ease-in-out infinite; }
+@keyframes mascot-page-turn { 0%, 60%, 100% { opacity: 0; } 68%, 84% { opacity: 1; } }
+@keyframes mascot-reading-breathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(2px) scale(.992); } }
+@keyframes mascot-cheer { from { transform: translateY(1px) rotate(-1deg); } to { transform: translateY(-8px) rotate(2deg); } }
+@keyframes mascot-celebrate { from { transform: translateY(0) scale(1); } to { transform: translateY(-10px) scale(1.04); } }
+@keyframes mascot-hop { 0%,100% { transform: translateY(0); } 45% { transform: translateY(-10px) rotate(-1deg); } }
+@keyframes mascot-idle { 0%,100% { transform: translateY(0) rotate(0); } 45% { transform: translateY(-3px) rotate(.7deg); } }
+@keyframes mascot-wait { 0%,72%,100% { transform: rotate(0); } 80% { transform: rotate(-3deg); } 89% { transform: rotate(3deg); } }
+@keyframes mascot-sleep { 0%,100% { transform: scale(1); } 50% { transform: scale(.975) translateY(3px); } }
+.dog-character-image {
+  width: 100%;
+  height: 128px;
+  object-fit: contain;
+  filter: drop-shadow(0 9px 8px rgba(44, 64, 54, .13));
+  transform-origin: 50% 90%;
+}
+.mood-excited .dog-character-image { animation: mascot-celebrate .72s ease-in-out infinite alternate; }
+.mood-happy .dog-character-image { animation: mascot-hop 1.35s ease-in-out infinite; }
+.mood-content .dog-character-image { animation: mascot-idle 3.5s ease-in-out infinite; }
+.mood-waiting .dog-character-image { animation: mascot-wait 4.8s ease-in-out infinite; }
+.mood-sleepy .dog-character-image { animation: mascot-sleep 3.2s ease-in-out infinite; }
+@media (max-width: 620px) {
+  .mascot-character-picture { min-height: 245px; }
+  .character-mascot { height: min(64vw, 255px); max-width: 100%; }
+  .dog-character-image { height: 102px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .character-mascot, .page-turn-frame, .dog-character-image { animation: none !important; }
+}
