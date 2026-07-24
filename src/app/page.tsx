@@ -142,7 +142,7 @@ export default function HomePage() {
       <section className={`daily-scripture-card ${dailyTextDone ? "completed" : ""}`}>
         <div className="daily-scripture-heading">
           <span className="scripture-label">日々の聖句</span>
-          {dailyTextDone && <span className="daily-complete-badge">完了 +5 XP</span>}
+          {dailyTextDone && <span className="daily-complete-badge">完了</span>}
         </div>
         {dailyTextLoading ? (
           <p>今日の聖句を読み込んでいます…</p>
@@ -154,7 +154,7 @@ export default function HomePage() {
         <div className="daily-scripture-actions">
           <a href="https://wol.jw.org/ja/wol/h/r7/lp-j" target="_blank" rel="noreferrer">解説をWOLで読む</a>
           <button className="button" disabled={!dailyText?.scripture || dailyTextDone || dailyTextBusy} onClick={completeDailyText}>
-            {dailyTextDone ? "読了済み ✓" : dailyTextBusy ? "保存中…" : "読んだ・完了 +5 XP"}
+            {dailyTextDone ? "読了済み ✓" : dailyTextBusy ? "保存中…" : "読んだ・完了"}
           </button>
         </div>
       </section>
