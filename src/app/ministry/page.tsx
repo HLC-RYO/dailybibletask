@@ -1,75 +1,16 @@
 "use client";
-
-import { useMemo, useState } from "react";
+import { useMemo,useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { useAppContext } from "@/context/AppContext";
 import { useHouseholdCollection } from "@/hooks/useHouseholdCollection";
 import type { MinistryItem } from "@/lib/types";
-
-export default function MinistryPage() {
-  const { firebaseUser } = useAppContext();
-  const { items, addItem, removeItem } = useHouseholdCollection<MinistryItem>("ministryItems");
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("会話の始め方");
-  const [scripture, setScripture] = useState("");
-  const [link, setLink] = useState("");
-  const [note, setNote] = useState("");
-  const sorted = useMemo(() => [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [items]);
-
-  const add = async () => {
-    if (!firebaseUser || !title.trim()) return;
-    await addItem({
-      id: crypto.randomUUID(),
-      title: title.trim(),
-      category,
-      scripture: scripture.trim(),
-      link: link.trim(),
-      note: note.trim(),
-      createdAt: new Date().toISOString(),
-      createdBy: firebaseUser.uid,
-    });
-    setTitle("");
-    setScripture("");
-    setLink("");
-    setNote("");
-  };
-
-  return (
-    <>
-      <PageHeader title="伝道資料" subtitle="役立った話題・例え・聖句・公式リンクを蓄積します" />
-      <section className="panel">
-        <div className="panel-title"><h2>情報を追加</h2></div>
-        <div className="form-grid">
-          <label>タイトル<input className="input" value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <div className="form-row">
-            <label>分類
-              <select className="select" value={category} onChange={(event) => setCategory(event.target.value)}>
-                <option>会話の始め方</option><option>よくある質問</option><option>分かりやすい例え</option><option>再訪問テーマ</option><option>聖句</option>
-              </select>
-            </label>
-            <label>関連聖句<input className="input" value={scripture} onChange={(event) => setScripture(event.target.value)} /></label>
-          </div>
-          <label>jw.orgリンク<input className="input" value={link} onChange={(event) => setLink(event.target.value)} placeholder="https://www.jw.org/..." /></label>
-          <label>メモ<textarea className="textarea" value={note} onChange={(event) => setNote(event.target.value)} /></label>
-          <button className="button" onClick={add}>保存</button>
-        </div>
-      </section>
-      <section className="panel">
-        <div className="list">
-          {sorted.map((item) => (
-            <article className="list-item" key={item.id}>
-              <div className="grow">
-                <span className="meta">{item.category} {item.scripture && `・${item.scripture}`}</span>
-                <h3>{item.title}</h3>
-                {item.note && <p>{item.note}</p>}
-                {item.link && <a className="pill" href={item.link} target="_blank" rel="noreferrer">公式ページを開く</a>}
-              </div>
-              {item.createdBy === firebaseUser?.uid && <button className="button danger" onClick={() => removeItem(item.id)}>削除</button>}
-            </article>
-          ))}
-          {!items.length && <div className="empty">伝道でまた使いたい情報を保存してみましょう。</div>}
-        </div>
-      </section>
-    </>
-  );
+const CATEGORIES=["紹介の言葉","ピッタリの聖句","反対意見","電話証言サンプル","手紙証言サンプル"];
+export default function MinistryPage(){
+ const {firebaseUser}=useAppContext(); const {items,addItem,removeItem}=useHouseholdCollection<MinistryItem>("ministryItems");
+ const [query,setQuery]=useState(""); const [show,setShow]=useState(false); const [category,setCategory]=useState(CATEGORIES[0]); const [title,setTitle]=useState(""); const [scripture,setScripture]=useState(""); const [link,setLink]=useState(""); const [note,setNote]=useState("");
+ const filtered=useMemo(()=>items.filter(i=>!query.trim()||[i.title,i.category,i.scripture,i.note].join(" ").toLowerCase().includes(query.trim().toLowerCase())),[items,query]);
+ const save=async()=>{if(!firebaseUser||!title.trim())return; await addItem({id:crypto.randomUUID(),title:title.trim(),category,scripture:scripture.trim(),link:link.trim(),note:note.trim(),createdAt:new Date().toISOString(),createdBy:firebaseUser.uid}); setTitle("");setScripture("");setLink("");setNote("");setShow(false)};
+ return <><PageHeader title="伝道情報" subtitle="証言に使える情報をカテゴリーごとに整理します"/><section className="panel workspace-actions"><button className="button" onClick={()=>setShow(v=>!v)}>＋ 新規作成</button><input className="input grow" value={query} onChange={e=>setQuery(e.target.value)} placeholder="タイトル、聖句、内容から検索"/></section><section className="panel today-topics-placeholder"><div className="panel-title"><h2>今日の話題</h2><span className="meta">準備中</span></div><p>国の話題3件と、市町村の話題2件を、政治・経済・科学・気候・国際情勢などから表示する予定です。</p></section>
+ {show&&<section className="panel"><div className="form-grid"><label>カテゴリー<select className="select" value={category} onChange={e=>setCategory(e.target.value)}>{CATEGORIES.map(n=><option key={n}>{n}</option>)}</select></label><label>タイトル<input className="input" value={title} onChange={e=>setTitle(e.target.value)}/></label><label>関連聖句<input className="input" value={scripture} onChange={e=>setScripture(e.target.value)}/></label><label>参考リンク<input className="input" value={link} onChange={e=>setLink(e.target.value)}/></label><label>内容<textarea className="textarea" value={note} onChange={e=>setNote(e.target.value)}/></label><button className="button" onClick={save}>保存</button></div></section>}
+ {CATEGORIES.map(name=>{const xs=filtered.filter(i=>i.category===name);return <section className="panel" key={name}><div className="panel-title"><h2>{name}</h2><span className="meta">{xs.length}件</span></div><div className="list">{xs.map(i=><article className="list-item" key={i.id}><div className="grow"><h3>{i.title}</h3>{i.scripture&&<p className="meta">{i.scripture}</p>}{i.note&&<p>{i.note}</p>}{i.link&&<a href={i.link} target="_blank" rel="noreferrer">リンクを開く</a>}</div><button className="button danger" onClick={()=>removeItem(i.id)}>削除</button></article>)}{!xs.length&&<div className="empty">まだ情報はありません。</div>}</div></section>})}</>;
 }
