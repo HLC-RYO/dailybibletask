@@ -62,6 +62,10 @@ export type CompanionStats = {
   totalChapters: number;
   dailyTextCompletions: number;
   experience: number;
+  moodScore: number;
+  xp3Days: number;
+  xp7Days: number;
+  xp30Days: number;
   stage: number;
   stageName: string;
   stageProgress: number;

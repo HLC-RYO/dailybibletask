@@ -119,9 +119,7 @@ export default function ReadingPage() {
           bookId: rangeDraft.bookId,
           startChapter,
           endChapter,
-          ...(rangeDraft.sourceUrl.trim()
-            ? { sourceUrl: rangeDraft.sourceUrl.trim() }
-            : {}),
+          sourceUrl: rangeDraft.sourceUrl.trim() || undefined,
         },
       ],
     }));

@@ -57,16 +57,14 @@ export function completeNextReading(
 ): ReadingState {
   const next = getNextReading(state, memberId, date);
   const member = state.members[memberId];
-const trimmedNote = note.trim();
-
-const record = {
-  id: crypto.randomUUID(),
-  memberId,
-  ref: next.ref,
-  mode: next.mode,
-  completedAt: new Date().toISOString(),
-  ...(trimmedNote ? { note: trimmedNote } : {}),
-} as const;
+  const record = {
+    id: crypto.randomUUID(),
+    memberId,
+    ref: next.ref,
+    mode: next.mode,
+    completedAt: new Date().toISOString(),
+    note: note.trim() || undefined,
+  } as const;
 
   const updatedMember = {
     ...member,
