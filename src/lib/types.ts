@@ -87,6 +87,10 @@ export type StudyPlan = {
 
 export type PersonalStudy = {
   id: string;
+  ownerUid?: string;
+  ownerMemberId?: MemberId;
+  ownerName?: string;
+  visibility?: "private" | "shared";
   title: string;
   body: string;
   scripture: string;

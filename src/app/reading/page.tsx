@@ -4,11 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { DogCompanion } from "@/components/DogCompanion";
 import { PageHeader } from "@/components/PageHeader";
 import { useAppContext } from "@/context/AppContext";
+import { useHouseholdCollection } from "@/hooks/useHouseholdCollection";
 import { useReadingPresence } from "@/hooks/useReadingPresence";
 import { useSharedReadingState } from "@/hooks/useSharedReadingState";
 import { bibleBooks, formatChapter, getBook } from "@/lib/bible";
 import { getCompanionStats } from "@/lib/companion";
 import { getCompanionProfile, isPresenceSharingEnabled } from "@/lib/defaults";
+import type { StudyPlan } from "@/lib/types";
 import { getWeekStartISO } from "@/lib/date";
 import { clearReadingPresence, publishReadingPresence } from "@/lib/presence";
 import {
@@ -22,6 +24,7 @@ export default function ReadingPage() {
   const { firebaseUser, household, memberId, partnerId, memberNames } = useAppContext();
   const [state, setState] = useSharedReadingState();
   const presence = useReadingPresence();
+  const { items: studyPlans } = useHouseholdCollection<StudyPlan>("studyPlans");
   const [note, setNote] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [rangeDraft, setRangeDraft] = useState({ bookId: "jer", startChapter: 1, endChapter: 1, sourceUrl: "" });
@@ -30,8 +33,8 @@ export default function ReadingPage() {
   const startedAtRef = useRef<string | undefined>(undefined);
   const next = useMemo(() => getNextReading(state, memberId), [state, memberId]);
   const currentRange = state.weeklyRanges.find((range) => range.weekStart === getWeekStartISO());
-  const progress = getSharedWeeklyProgress(state);
-  const percent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
+  const progress = getSharedWeeklyProgress(state, studyPlans);
+  const percent = progress.percent;
   const companion = getCompanionProfile(state);
   const companionStats = getCompanionStats(state, presence);
   const partnerPresence = presence[partnerId];
@@ -119,7 +122,7 @@ export default function ReadingPage() {
           bookId: rangeDraft.bookId,
           startChapter,
           endChapter,
-          sourceUrl: rangeDraft.sourceUrl.trim() || undefined,
+          ...(rangeDraft.sourceUrl.trim() ? { sourceUrl: rangeDraft.sourceUrl.trim() } : {}),
         },
       ],
     }));
@@ -186,7 +189,13 @@ export default function ReadingPage() {
       <section className="panel">
         <div className="panel-title"><h2>今週の夫婦ゲージ</h2><strong>{percent}%</strong></div>
         <div className="progress-track"><div className="progress-bar" style={{ width: `${percent}%` }} /></div>
-        <p style={{ margin: "10px 0 0", color: "var(--muted)", fontSize: 13 }}>2人で {progress.done}/{progress.total || 0}章完了</p>
+        <p style={{ margin: "10px 0 0", color: "var(--muted)", fontSize: 13 }}>今週 {progress.points}/{progress.goal}ポイント</p>
+        <div className="button-row weekly-gauge-breakdown">
+          <span className="pill">聖書 {progress.readingPoints}</span>
+          <span className="pill">日々の聖句 {progress.dailyTextPoints}</span>
+          <span className="pill">ふたりの研究 {progress.studyPoints}</span>
+          <span className="pill">一緒の日 {progress.togetherBonus}</span>
+        </div>
         <div className="stat-row" style={{ marginTop: 12 }}>
           <div className="stat"><span>ワンちゃんとのきずな</span><strong>{companionStats.bond}</strong></div>
           <div className="stat"><span>2人の累計</span><strong>{companionStats.totalChapters}章</strong></div>

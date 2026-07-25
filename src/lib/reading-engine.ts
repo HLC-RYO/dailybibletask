@@ -1,7 +1,7 @@
 import { advanceChapter } from "./bible";
 import { canonicalChapterKey } from "./progress";
-import { getWeekStartISO } from "./date";
-import type { ChapterRef, MemberId, ReadingState, WeeklyMeetingRange } from "./types";
+import { getWeekStartISO, toLocalISODate } from "./date";
+import type { ChapterRef, MemberId, ReadingState, StudyPlan, WeeklyMeetingRange } from "./types";
 
 export type NextReading = {
   mode: "meeting" | "normal";
@@ -57,13 +57,14 @@ export function completeNextReading(
 ): ReadingState {
   const next = getNextReading(state, memberId, date);
   const member = state.members[memberId];
+  const trimmedNote = note.trim();
   const record = {
     id: crypto.randomUUID(),
     memberId,
     ref: next.ref,
     mode: next.mode,
     completedAt: new Date().toISOString(),
-    note: note.trim() || undefined,
+    ...(trimmedNote ? { note: trimmedNote } : {}),
   } as const;
 
   const updatedMember = {
@@ -112,13 +113,66 @@ export function getMemberXp(state: ReadingState, memberId: MemberId): number {
   return state.members[memberId].history.reduce((sum, record) => sum + (record.mode === "meeting" ? 15 : 10) + (record.note ? 5 : 0), 0);
 }
 
-export function getSharedWeeklyProgress(state: ReadingState, date = new Date()): { done: number; total: number } {
-  const range = getCurrentRange(state, date);
-  if (!range) return { done: 0, total: 0 };
-  const refs = listRange(range);
-  const total = refs.length * 2;
-  const done = (["husband", "wife"] as MemberId[]).reduce((count, memberId) => {
-    return count + refs.filter((ref) => state.members[memberId].completedMeetingKeys.includes(chapterKey(range.weekStart, ref))).length;
-  }, 0);
-  return { done, total };
+export type SharedWeeklyProgress = {
+  points: number;
+  goal: number;
+  percent: number;
+  readingPoints: number;
+  dailyTextPoints: number;
+  studyPoints: number;
+  togetherBonus: number;
+};
+
+export function getSharedWeeklyProgress(
+  state: ReadingState,
+  studyPlans: StudyPlan[] = [],
+  date = new Date(),
+): SharedWeeklyProgress {
+  const weekStart = getWeekStartISO(date);
+  const start = new Date(`${weekStart}T00:00:00`);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 7);
+
+  const inWeek = (value: string | Date) => {
+    const target = value instanceof Date ? value : new Date(value);
+    return !Number.isNaN(target.getTime()) && target >= start && target < end;
+  };
+
+  const histories = (["husband", "wife"] as MemberId[]).flatMap((memberId) =>
+    state.members[memberId].history.filter((record) => inWeek(record.completedAt)),
+  );
+  const readingPoints = histories.length * 10;
+
+  const dailyTextPoints = (["husband", "wife"] as MemberId[]).reduce((sum, memberId) =>
+    sum + (state.dailyTextCompletedDates?.[memberId] ?? []).filter((day) => {
+      const target = new Date(`${day}T12:00:00`);
+      return inWeek(target);
+    }).length * 5, 0);
+
+  const studyPoints = studyPlans.filter((plan) =>
+    plan.status === "done" && inWeek(new Date(`${plan.scheduledAt}T12:00:00`)),
+  ).length * 40;
+
+  const husbandDays = new Set(
+    state.members.husband.history.filter((record) => inWeek(record.completedAt))
+      .map((record) => toLocalISODate(new Date(record.completedAt))),
+  );
+  const sharedDays = new Set(
+    state.members.wife.history.filter((record) => inWeek(record.completedAt))
+      .map((record) => toLocalISODate(new Date(record.completedAt)))
+      .filter((day) => husbandDays.has(day)),
+  ).size;
+  const togetherBonus = sharedDays * 5;
+  const points = readingPoints + dailyTextPoints + studyPoints + togetherBonus;
+  const goal = 180;
+
+  return {
+    points,
+    goal,
+    percent: Math.min(100, Math.round((points / goal) * 100)),
+    readingPoints,
+    dailyTextPoints,
+    studyPoints,
+    togetherBonus,
+  };
 }
