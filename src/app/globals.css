@@ -947,3 +947,13 @@ label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weig
   .watercolor-zzz,
   .page-glow { animation: none !important; }
 }
+
+/* Private personal-study workspace: intentionally isolated for future redesigns. */
+.personal-study-intro { border-color: #bfd5bd; background: #f2f8ec; }
+.personal-study-intro strong { color: var(--brand); }
+.personal-study-intro p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.compact-textarea { min-height: 72px; }
+.personal-study-body { min-height: 180px; }
+.personal-study-item { display: block; }
+.personal-study-links { display: grid; gap: 4px; margin-top: 11px; }
+.personal-study-links a { overflow-wrap: anywhere; color: var(--brand); font-size: 12px; text-decoration: underline; }

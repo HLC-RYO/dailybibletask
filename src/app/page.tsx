@@ -117,8 +117,8 @@ export default function HomePage() {
       </section>
 
       <section className="home-quick-grid" aria-label="主な機能">
-        <a href="/reading" className="quick-card green">
-          <span className="quick-icon">🗺️</span><div><strong>集会範囲</strong><small>今週の範囲と通常通読</small></div>
+        <a href="/personal-study" className="quick-card green">
+          <span className="quick-icon">✍️</span><div><strong>じぶんの研究</strong><small>自分だけの資料や下書き</small></div>
         </a>
         <a href="/study" className="quick-card coral">
           <span className="quick-icon">📖</span><div><strong>ふたりの研究</strong><small>予定・準備・振り返り</small></div>
@@ -139,10 +139,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={`daily-scripture-card ${dailyTextDone ? "completed" : ""}`}>
+      <section className="daily-scripture-card">
         <div className="daily-scripture-heading">
           <span className="scripture-label">日々の聖句</span>
-          {dailyTextDone && <span className="daily-complete-badge">完了</span>}
+          {dailyTextDone && <span className="daily-complete-badge">読みました ✓</span>}
         </div>
         {dailyTextLoading ? (
           <p>今日の聖句を読み込んでいます…</p>

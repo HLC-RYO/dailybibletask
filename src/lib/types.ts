@@ -81,6 +81,18 @@ export type StudyPlan = {
   createdAt: string;
 };
 
+export type PersonalStudy = {
+  id: string;
+  title: string;
+  body: string;
+  scripture: string;
+  tags: string[];
+  referenceLinks: string[];
+  status: "draft" | "complete";
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ResearchNote = {
   id: string;
   title: string;
