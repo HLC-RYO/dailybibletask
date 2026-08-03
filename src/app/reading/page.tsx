@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DogCompanion } from "@/components/DogCompanion";
@@ -13,6 +13,17 @@ import { getCompanionProfile, isPresenceSharingEnabled } from "@/lib/defaults";
 import type { StudyPlan } from "@/lib/types";
 import { getWeekStartISO } from "@/lib/date";
 import { clearReadingPresence, publishReadingPresence } from "@/lib/presence";
+
+type WeeklyReadingResponse = {
+  weekStart: string;
+  bookId: string;
+  bookName: string;
+  startChapter: number;
+  endChapter: number;
+  sourceUrl: string;
+  rangeLabel: string;
+  error?: string;
+};
 import {
   completeNextReading,
   getNextReading,
@@ -30,6 +41,8 @@ export default function ReadingPage() {
   const [rangeDraft, setRangeDraft] = useState({ bookId: "jer", startChapter: 1, endChapter: 1, sourceUrl: "" });
   const [isReading, setIsReading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [autoRangeLoading, setAutoRangeLoading] = useState(false);
+  const [autoRangeMessage, setAutoRangeMessage] = useState("");
   const startedAtRef = useRef<string | undefined>(undefined);
   const next = useMemo(() => getNextReading(state, memberId), [state, memberId]);
   const currentRange = state.weeklyRanges.find((range) => range.weekStart === getWeekStartISO());
@@ -107,6 +120,50 @@ export default function ReadingPage() {
       setBusy(false);
     }
   };
+
+  const fetchWeeklyRange = async (force = false) => {
+    const weekStart = getWeekStartISO();
+    if (!force && state.weeklyRanges.some((range) => range.weekStart === weekStart)) return;
+
+    setAutoRangeLoading(true);
+    setAutoRangeMessage("");
+    try {
+      const response = await fetch("/api/weekly-reading", {
+        cache: "no-store",
+      });
+      const data = await response.json() as WeeklyReadingResponse;
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "今週の範囲を取得できませんでした");
+      }
+
+      const book = getBook(data.bookId);
+      const startChapter = Math.min(Math.max(1, data.startChapter), book.chapters);
+      const endChapter = Math.min(Math.max(startChapter, data.endChapter), book.chapters);
+
+      await setState((current) => ({
+        ...current,
+        weeklyRanges: [
+          ...current.weeklyRanges.filter((range) => range.weekStart !== data.weekStart),
+          {
+            weekStart: data.weekStart,
+            bookId: data.bookId,
+            startChapter,
+            endChapter,
+            sourceUrl: data.sourceUrl,
+          },
+        ],
+      }));
+      setAutoRangeMessage(`${data.rangeLabel}をWOLから設定しました`);
+    } catch (error) {
+      setAutoRangeMessage(error instanceof Error ? error.message : "自動取得に失敗しました");
+    } finally {
+      setAutoRangeLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchWeeklyRange(false);
+  }, [currentRange?.weekStart]);
 
   const saveCurrentRange = async () => {
     const weekStart = getWeekStartISO();
@@ -205,9 +262,20 @@ export default function ReadingPage() {
       <section className="panel">
         <div className="panel-title">
           <h2>今週の集会範囲</h2>
-          <button className="button secondary" onClick={() => setShowSettings((value) => !value)}>{showSettings ? "閉じる" : "変更"}</button>
+          <div className="button-row">
+            <button className="button secondary" disabled={autoRangeLoading} onClick={() => fetchWeeklyRange(true)}>
+              {autoRangeLoading ? "取得中…" : "WOLから再取得"}
+            </button>
+            <button className="button secondary" onClick={() => setShowSettings((value) => !value)}>{showSettings ? "閉じる" : "変更"}</button>
+          </div>
         </div>
-        {currentRange ? <p>{getBook(currentRange.bookId).name} {currentRange.startChapter}–{currentRange.endChapter}章</p> : <p>今週の範囲は未設定です。</p>}
+        {currentRange ? (
+          <>
+            <p>{getBook(currentRange.bookId).name} {currentRange.startChapter}–{currentRange.endChapter}章</p>
+            {currentRange.sourceUrl && <a href={currentRange.sourceUrl} target="_blank" rel="noreferrer">WOLで今週の予定を見る</a>}
+          </>
+        ) : <p>今週の範囲は未設定です。WOLから自動取得を試しています。</p>}
+        {autoRangeMessage && <p className="meta">{autoRangeMessage}</p>}
         {showSettings && (
           <div className="form-grid">
             <label>書
@@ -233,3 +301,4 @@ export default function ReadingPage() {
     </>
   );
 }
+
