@@ -1,4 +1,15 @@
-﻿import { NextResponse } from "next/server";
+﻿param([string]$ProjectPath = ".")
+
+$ErrorActionPreference = "Stop"
+$ProjectPath = (Resolve-Path $ProjectPath).Path
+$Target = Join-Path $ProjectPath "src\app\api\topics\route.ts"
+
+if (-not (Test-Path (Join-Path $ProjectPath "package.json"))) {
+  throw "package.json が見つかりません。DailyBibleTask のプロジェクト直下で実行してください。"
+}
+
+$Content = @'
+import { NextResponse } from "next/server";
 
 export const revalidate = 21600;
 
@@ -168,3 +179,16 @@ export async function GET() {
     topics,
   });
 }
+'@
+
+New-Item -ItemType Directory -Force -Path (Split-Path $Target -Parent) | Out-Null
+Set-Content -Path $Target -Value $Content -Encoding UTF8
+
+Write-Host "更新: src\app\api\topics\route.ts" -ForegroundColor Green
+Write-Host ""
+Write-Host "ニュース取得修正 v1.5.2 完了" -ForegroundColor Cyan
+Write-Host "次を実行してください:"
+Write-Host "npm run build"
+Write-Host "git add ."
+Write-Host 'git commit -m "Fix daily topics news feed"'
+Write-Host "git push"
