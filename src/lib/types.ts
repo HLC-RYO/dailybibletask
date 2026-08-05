@@ -1,4 +1,4 @@
-export type MemberId = "husband" | "wife";
+﻿export type MemberId = "husband" | "wife";
 
 export type ChapterRef = { bookId: string; chapter: number };
 
@@ -154,6 +154,24 @@ export type MinistryItem = {
   link: string;
   note: string;
   createdAt: string;
+  createdBy: string;
+};
+
+
+export type TaskFrameRow = {
+  id: string;
+  name: string;
+  detail: string;
+  completed: boolean;
+  createdAt: string;
+};
+
+export type TaskFrame = {
+  id: string;
+  title: string;
+  rows: TaskFrameRow[];
+  createdAt: string;
+  updatedAt: string;
   createdBy: string;
 };
 

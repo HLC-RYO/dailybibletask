@@ -1,0 +1,17 @@
+
+export type TaskFrameRow = {
+  id: string;
+  name: string;
+  detail: string;
+  completed: boolean;
+  createdAt: string;
+};
+
+export type TaskFrame = {
+  id: string;
+  title: string;
+  rows: TaskFrameRow[];
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+};
