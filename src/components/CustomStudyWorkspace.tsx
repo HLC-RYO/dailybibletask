@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useAppContext } from "@/context/AppContext";
@@ -14,6 +14,20 @@ const FIELD_OPTIONS: { key: StudyFieldKey; label: string }[] = [
 ];
 
 const EMPTY_VALUES: StudyEntryValues = { custom: {} };
+
+const STUDY_FIELD_ORDER: StudyFieldKey[] = [
+  "title",
+  "name",
+  "year",
+  "scripture",
+  "labels",
+  "links",
+  "memo",
+];
+
+function orderStudyFields(fields: StudyFieldKey[]): StudyFieldKey[] {
+  return STUDY_FIELD_ORDER.filter((field) => fields.includes(field));
+}
 
 export function CustomStudyWorkspace({ scope }: { scope: "personal" | "couple" }) {
   const { firebaseUser, memberId, memberNames } = useAppContext();
@@ -246,7 +260,7 @@ export function CustomStudyWorkspace({ scope }: { scope: "personal" | "couple" }
 
     {showEntryForm && <section className="panel"><h2>{editing?"研究を編集":"新しい研究"}</h2><div className="form-grid">
       <label>カテゴリー<select className="select" value={selectedCategoryId} onChange={(e)=>{setSelectedCategoryId(e.target.value);setValues(EMPTY_VALUES)}}><option value="">選択してください</option>{categories.items.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-      {selectedCategory?.enabledFields.map(renderField)}
+      {selectedCategory && orderStudyFields(selectedCategory.enabledFields).map(renderField)}
       {selectedCategory?.customFields.map(field=><label key={field}>{field}<textarea className="textarea" value={values.custom?.[field]??""} onChange={(e)=>setValues({...values,custom:{...(values.custom??{}),[field]:e.target.value}})}/></label>)}
       {scope==="personal"&&<label>公開範囲<select className="select" value={visibility} onChange={(e)=>setVisibility(e.target.value as "private"|"shared")}><option value="private">🔒 自分だけ</option><option value="shared">👥 家族に共有</option></select></label>}
       <div className="button-row"><button className="button secondary" disabled={busy||!selectedCategory} onClick={()=>saveEntry("draft")}>編集中で保存</button><button className="button" disabled={busy||!selectedCategory} onClick={()=>saveEntry("complete")}>完成として保存</button><button className="button secondary" onClick={()=>setShowEntryForm(false)}>閉じる</button></div>
@@ -258,3 +272,4 @@ export function CustomStudyWorkspace({ scope }: { scope: "personal" | "couple" }
     </div></section>
   </>;
 }
+
