@@ -969,3 +969,16 @@ label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weig
 /* v1.5.3 category save feedback */
 .save-success { color: #39734a; font-weight: 700; }
 .save-error { color: #a13c3c; font-weight: 700; white-space: pre-wrap; }
+
+/* v1.5.4 category manager */
+.category-pill-wrap { display: inline-flex; align-items: center; gap: 2px; }
+.category-pill-wrap .pill-button { border-radius: 999px 6px 6px 999px; }
+.category-menu-button {
+  min-width: 34px; height: 34px; border: 1px solid var(--line);
+  border-radius: 6px 999px 999px 6px; background: var(--surface);
+  color: var(--muted); font-weight: 800; cursor: pointer;
+}
+.category-manager { border: 2px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+.save-success { color: #39734a; font-weight: 700; }
+.save-error { color: #a13c3c; font-weight: 700; white-space: pre-wrap; }
+
