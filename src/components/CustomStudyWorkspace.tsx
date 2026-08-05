@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useAppContext } from "@/context/AppContext";
@@ -40,6 +40,8 @@ export function CustomStudyWorkspace({ scope }: { scope: "personal" | "couple" }
   const [visibility, setVisibility] = useState<"private" | "shared">(scope === "couple" ? "shared" : "private");
   const [editing, setEditing] = useState<StudyEntry | null>(null);
   const [busy, setBusy] = useState(false);
+  const [categoryBusy, setCategoryBusy] = useState(false);
+  const [categoryMessage, setCategoryMessage] = useState("");
 
   const selectedCategory = categories.items.find((item) => item.id === selectedCategoryId);
   const categoryCounts = useMemo(() => {
@@ -53,16 +55,50 @@ export function CustomStudyWorkspace({ scope }: { scope: "personal" | "couple" }
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)), [categoryFilter, entries.items]);
 
   const saveCategory = async () => {
-    if (!categoryName.trim()) return;
-    const now = new Date().toISOString();
-    await categories.addItem({
-      id: crypto.randomUUID(), scope, name: categoryName.trim(), enabledFields,
-      customFields: customFields.map((item) => item.trim()).filter(Boolean),
-      createdAt: now, updatedAt: now,
-    });
-    setCategoryName(""); setEnabledFields(["title", "memo"]); setCustomFields(["", "", ""]); setShowCategoryForm(false);
-  };
+    const trimmedName = categoryName.trim();
+    if (!trimmedName) {
+      setCategoryMessage("カテゴリー名を入力してください。");
+      return;
+    }
 
+    setCategoryBusy(true);
+    setCategoryMessage("");
+
+    try {
+      const now = new Date().toISOString();
+      const category: StudyCategory = {
+        id: typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `category-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        scope,
+        name: trimmedName,
+        enabledFields: enabledFields.length ? enabledFields : ["title", "memo"],
+        customFields: customFields.map((item) => item.trim()).filter(Boolean),
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      if (scope === "personal") {
+        if (!firebaseUser) throw new Error("ログイン情報を確認できません");
+        await personalCategories.addItem(category);
+      } else {
+        await coupleCategories.addItem(category);
+      }
+
+      setCategoryName("");
+      setEnabledFields(["title", "memo"]);
+      setCustomFields(["", "", ""]);
+      setShowCategoryForm(false);
+      setCategoryMessage(`「${trimmedName}」を登録しました。`);
+    } catch (error) {
+      console.error("Failed to save study category", error);
+      setCategoryMessage(
+        `カテゴリーを保存できませんでした：${error instanceof Error ? error.message : "不明なエラー"}`
+      );
+    } finally {
+      setCategoryBusy(false);
+    }
+  };
   const saveEntry = async (status: "draft" | "complete") => {
     if (!firebaseUser || !selectedCategory) return;
     setBusy(true);
@@ -111,6 +147,7 @@ export function CustomStudyWorkspace({ scope }: { scope: "personal" | "couple" }
       <button className="button" onClick={() => startNew()} disabled={!categories.items.length}>＋ 新規作成</button>
       <button className="button secondary" onClick={() => setShowCategoryForm((v) => !v)}>＋ カテゴリー作成</button>
       {!categories.items.length && <p className="meta">最初にカテゴリーを1つ作成してください。</p>}
+      {!showCategoryForm && categoryMessage && <p className={categoryMessage.includes("登録しました") ? "meta save-success" : "meta save-error"}>{categoryMessage}</p>}
       {categories.items.length > 0 && <div className="registered-category-block">
         <span className="meta category-caption">登録済みカテゴリー</span>
         <div className="category-filter-row">
@@ -125,7 +162,13 @@ export function CustomStudyWorkspace({ scope }: { scope: "personal" | "couple" }
       <div className="field-choice-grid">{FIELD_OPTIONS.map((field)=><label className="check-card" key={field.key}><input type="checkbox" checked={enabledFields.includes(field.key)} onChange={()=>setEnabledFields((current)=>current.includes(field.key)?current.filter((item)=>item!==field.key):[...current,field.key])}/><span>{field.label}</span></label>)}</div>
       <strong>その他の入力欄（最大3つ）</strong>
       {customFields.map((field,index)=><input className="input" key={index} value={field} onChange={(e)=>{const next=[...customFields];next[index]=e.target.value;setCustomFields(next)}} placeholder={`自由入力欄 ${index+1}`} />)}
-      <div className="button-row"><button className="button" onClick={saveCategory}>カテゴリーを保存</button><button className="button secondary" onClick={()=>setShowCategoryForm(false)}>閉じる</button></div>
+      <div className="button-row">
+        <button className="button" disabled={categoryBusy} onClick={saveCategory}>
+          {categoryBusy ? "保存中…" : "カテゴリーを保存"}
+        </button>
+        <button className="button secondary" disabled={categoryBusy} onClick={()=>setShowCategoryForm(false)}>閉じる</button>
+      </div>
+      {categoryMessage && <p className={categoryMessage.includes("登録しました") ? "meta save-success" : "meta save-error"}>{categoryMessage}</p>}
     </div></section>}
 
     {showEntryForm && <section className="panel"><div className="panel-title"><h2>{editing?"研究を編集":"新しい研究"}</h2></div><div className="form-grid">
@@ -142,3 +185,4 @@ export function CustomStudyWorkspace({ scope }: { scope: "personal" | "couple" }
     </div></section>
   </>;
 }
+
