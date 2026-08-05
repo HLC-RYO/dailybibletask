@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DogCompanion } from "@/components/DogCompanion";
 import { PageHeader } from "@/components/PageHeader";
 import { useAppContext } from "@/context/AppContext";
@@ -9,7 +9,7 @@ import { useReadingPresence } from "@/hooks/useReadingPresence";
 import { useSharedReadingState } from "@/hooks/useSharedReadingState";
 import { bibleBooks, formatChapter, getBook } from "@/lib/bible";
 import { getCompanionStats } from "@/lib/companion";
-import { getCompanionProfile, isPresenceSharingEnabled } from "@/lib/defaults";
+import { getCompanionProfile } from "@/lib/defaults";
 import type { StudyPlan } from "@/lib/types";
 import { getWeekStartISO } from "@/lib/date";
 import { clearReadingPresence, publishReadingPresence } from "@/lib/presence";
@@ -32,7 +32,7 @@ import {
 } from "@/lib/reading-engine";
 
 export default function ReadingPage() {
-  const { firebaseUser, household, memberId, partnerId, memberNames } = useAppContext();
+  const { memberId, partnerId, memberNames } = useAppContext();
   const [state, setState] = useSharedReadingState();
   const presence = useReadingPresence();
   const { items: studyPlans } = useHouseholdCollection<StudyPlan>("studyPlans");
@@ -49,9 +49,11 @@ export default function ReadingPage() {
   const progress = getSharedWeeklyProgress(state, studyPlans);
   const percent = progress.percent;
   const companion = getCompanionProfile(state);
-  const companionStats = getCompanionStats(state, presence);
-  const partnerPresence = presence[partnerId];
-  const sharingEnabled = isPresenceSharingEnabled(state, memberId);
+  const companionStats = getCompanionStats(state, {});
+  const partnerLatestReading = useMemo(() => {
+    const history = state.members[partnerId]?.history ?? [];
+    return [...history].sort((a, b) => b.completedAt.localeCompare(a.completedAt))[0];
+  }, [state.members, partnerId]);
 
   useEffect(() => {
     if (!showSettings) return;
@@ -194,38 +196,25 @@ export default function ReadingPage() {
 
       <DogCompanion name={companion.name} stats={companionStats} compact />
 
-      {partnerPresence && (
-        <section className="live-reading-banner" aria-live="polite">
-          <span className="live-dot" />
-          <div>
-            <strong>{memberNames[partnerId]}も今読書中</strong>
-            <span>{formatChapter(partnerPresence.ref)}を読んでいます</span>
-          </div>
-          {partnerPresence.ref.bookId === next.ref.bookId && partnerPresence.ref.chapter === next.ref.chapter && (
-            <span className="same-chapter-badge">同じ章！</span>
+      <section className="partner-last-reading-card">
+        <div className="partner-last-reading-icon">📖</div>
+        <div>
+          <span className="meta">{memberNames[partnerId]}が最後に読んだ場所</span>
+          {partnerLatestReading ? (
+            <>
+              <strong>{formatChapter(partnerLatestReading.ref)}</strong>
+              <small>{new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(partnerLatestReading.completedAt))}</small>
+            </>
+          ) : (
+            <strong>まだ読書記録がありません</strong>
           )}
-        </section>
-      )}
-
-      <section className={`panel quest ${isReading ? "reading-active" : ""}`}>
+        </div>
+      </section>
+      <section className="panel quest">
         <span className="quest-badge">{next.mode === "meeting" ? "今週の特別ルート" : "通常の旅"}</span>
         <h2>{formatChapter(next.ref)}</h2>
         <p>{next.mode === "meeting" ? `集会範囲の ${next.meetingIndex}章目 / 全${next.meetingTotal}章` : "以前の通読位置から1章進みます"}</p>
         {next.mode === "meeting" && <div className="return-place">完了後の帰還地点：{formatChapter(state.members[memberId].normalNext)}</div>}
-
-        <div className="reading-presence-control">
-          {isReading ? (
-            <>
-              <span className="reading-now"><i />{sharingEnabled ? "読書中として相手に表示しています" : "この画面で読書中（相手には非公開）"}</span>
-              <button className="text-button" onClick={stopReading}>読書をいったん終了</button>
-            </>
-          ) : (
-            <>
-              <button className="button start-reading" onClick={beginReading}>この章を読み始める</button>
-              <small>{sharingEnabled ? "相手の画面に「今読んでいる」と表示されます" : "読書状況は非公開設定です"}</small>
-            </>
-          )}
-        </div>
 
         <div className="form-grid" style={{ marginTop: 14 }}>
           <label>心に残ったこと（任意・ワンちゃんとのきずなも深まります）
@@ -301,4 +290,5 @@ export default function ReadingPage() {
     </>
   );
 }
+
 
