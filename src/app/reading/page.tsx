@@ -5,14 +5,12 @@ import { DogCompanion } from "@/components/DogCompanion";
 import { PageHeader } from "@/components/PageHeader";
 import { useAppContext } from "@/context/AppContext";
 import { useHouseholdCollection } from "@/hooks/useHouseholdCollection";
-import { useReadingPresence } from "@/hooks/useReadingPresence";
 import { useSharedReadingState } from "@/hooks/useSharedReadingState";
 import { bibleBooks, formatChapter, getBook } from "@/lib/bible";
 import { getCompanionStats } from "@/lib/companion";
 import { getCompanionProfile } from "@/lib/defaults";
 import type { StudyPlan } from "@/lib/types";
 import { getWeekStartISO } from "@/lib/date";
-import { clearReadingPresence, publishReadingPresence } from "@/lib/presence";
 
 type WeeklyReadingResponse = {
   weekStart: string;
@@ -34,16 +32,13 @@ import {
 export default function ReadingPage() {
   const { memberId, partnerId, memberNames } = useAppContext();
   const [state, setState] = useSharedReadingState();
-  const presence = useReadingPresence();
   const { items: studyPlans } = useHouseholdCollection<StudyPlan>("studyPlans");
   const [note, setNote] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [rangeDraft, setRangeDraft] = useState({ bookId: "jer", startChapter: 1, endChapter: 1, sourceUrl: "" });
-  const [isReading, setIsReading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [autoRangeLoading, setAutoRangeLoading] = useState(false);
   const [autoRangeMessage, setAutoRangeMessage] = useState("");
-  const startedAtRef = useRef<string | undefined>(undefined);
   const next = useMemo(() => getNextReading(state, memberId), [state, memberId]);
   const currentRange = state.weeklyRanges.find((range) => range.weekStart === getWeekStartISO());
   const progress = getSharedWeeklyProgress(state, studyPlans);
@@ -65,46 +60,8 @@ export default function ReadingPage() {
     });
   }, [showSettings, currentRange?.bookId, currentRange?.startChapter, currentRange?.endChapter, currentRange?.sourceUrl]);
 
-  useEffect(() => {
-    if (!isReading || !sharingEnabled || !household || !firebaseUser) return;
-    const publish = () => {
-      if (document.visibilityState !== "visible") return;
-      void publishReadingPresence({
-        householdId: household.id,
-        uid: firebaseUser.uid,
-        memberId,
-        chapterRef: next.ref,
-        startedAt: startedAtRef.current,
-      });
-    };
-    publish();
-    const timer = window.setInterval(publish, 20_000);
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") publish();
-      else void clearReadingPresence(household.id, firebaseUser.uid);
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => {
-      window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", onVisibility);
-      void clearReadingPresence(household.id, firebaseUser.uid);
-    };
-  }, [isReading, sharingEnabled, household, firebaseUser, memberId, next.ref.bookId, next.ref.chapter]);
-
-  const beginReading = () => {
-    startedAtRef.current = new Date().toISOString();
-    setIsReading(true);
-  };
-
-  const stopReading = () => {
-    setIsReading(false);
-    startedAtRef.current = undefined;
-    if (household && firebaseUser) void clearReadingPresence(household.id, firebaseUser.uid);
-  };
-
   const complete = async () => {
     setBusy(true);
-    stopReading();
     try {
       await setState((current) => completeNextReading(current, memberId, note));
       setNote("");
@@ -115,7 +72,6 @@ export default function ReadingPage() {
 
   const undo = async () => {
     setBusy(true);
-    stopReading();
     try {
       await setState((current) => undoLatestReading(current, memberId));
     } finally {
@@ -290,6 +246,7 @@ export default function ReadingPage() {
     </>
   );
 }
+
 
 
 
